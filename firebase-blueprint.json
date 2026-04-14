@@ -1,0 +1,82 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "User profile information for both admins and clients.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "The unique identifier for the user." },
+        "email": { "type": "string", "format": "email", "description": "The user's email address." },
+        "displayName": { "type": "string", "description": "The user's display name." },
+        "role": { "type": "string", "enum": ["admin", "client"], "description": "The user's role in the system." }
+      },
+      "required": ["uid", "email", "displayName", "role"]
+    },
+    "Service": {
+      "title": "Service",
+      "description": "A beauty service offered by the business.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "price": { "type": "number" },
+        "duration": { "type": "number", "description": "Duration in minutes" },
+        "category": { "type": "string" },
+        "imageUrl": { "type": "string", "format": "uri" }
+      },
+      "required": ["name", "price", "duration", "category"]
+    },
+    "Appointment": {
+      "title": "Appointment",
+      "description": "A booking for a beauty service.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "serviceId": { "type": "string" },
+        "serviceName": { "type": "string" },
+        "clientName": { "type": "string" },
+        "clientPhone": { "type": "string" },
+        "clientEmail": { "type": "string", "format": "email" },
+        "date": { "type": "string", "description": "ISO date string" },
+        "startTime": { "type": "string", "description": "HH:mm" },
+        "endTime": { "type": "string", "description": "HH:mm" },
+        "status": { "type": "string", "enum": ["pending", "confirmed", "cancelled", "completed"] },
+        "notes": { "type": "string" },
+        "createdAt": { "type": "number" }
+      },
+      "required": ["serviceId", "clientName", "clientPhone", "date", "startTime", "endTime", "status"]
+    },
+    "BusinessConfig": {
+      "title": "BusinessConfig",
+      "description": "Global configuration for the beauty business.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "address": { "type": "string" },
+        "phone": { "type": "string" },
+        "email": { "type": "string" },
+        "openingHours": { "type": "object" },
+        "welcomeText": { "type": "string" }
+      }
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "User profiles for authentication and roles."
+    },
+    "/services/{serviceId}": {
+      "schema": "Service",
+      "description": "Available beauty services."
+    },
+    "/appointments/{appointmentId}": {
+      "schema": "Appointment",
+      "description": "Customer bookings."
+    },
+    "/config/business": {
+      "schema": "BusinessConfig",
+      "description": "Business settings."
+    }
+  }
+}
