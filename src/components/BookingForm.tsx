@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { format, startOfToday } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -25,7 +25,7 @@ import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import Link from 'next/link';
 import { db, handleFirestoreError, OperationType } from '@/lib/firebase';
-import { collection, onSnapshot, query, orderBy, addDoc, serverTimestamp, Timestamp } from 'firebase/firestore';
+import { collection, query, orderBy, addDoc, serverTimestamp, Timestamp, getDocs } from 'firebase/firestore';
 
 const steps = ['Servicio', 'Fecha y Hora', 'Tus Datos', 'Confirmación'];
 
@@ -55,24 +55,29 @@ export default function BookingForm() {
     notes: ''
   });
 
-  useEffect(() => {
-    const q = query(collection(db, 'services'), orderBy('name'));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const servicesData = snapshot.docs.map(doc => ({
+  const fetchServices = useCallback(async () => {
+    setFetchingServices(true);
+    try {
+      const q = query(collection(db, 'services'), orderBy('name'));
+      const snapshot = await getDocs(q);
+      const servicesData = snapshot.docs.map((doc) => ({
         id: doc.id,
-        ...doc.data()
+        ...doc.data(),
       }));
+
       if (servicesData.length > 0) {
         setServices(servicesData);
       }
-      setFetchingServices(false);
-    }, (error) => {
+    } catch (error) {
       console.error('Firestore services error:', error);
+    } finally {
       setFetchingServices(false);
-    });
-
-    return () => unsubscribe();
+    }
   }, []);
+
+  useEffect(() => {
+    fetchServices();
+  }, [fetchServices]);
 
   const handleNext = () => {
     if (step === 0 && !selectedService) {
